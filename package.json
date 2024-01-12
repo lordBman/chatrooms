@@ -1,0 +1,16 @@
+{
+    "name": "blimited",
+    "version": "1.0.0",
+    "description": "Combined React app and Node.js application",
+    "scripts": {
+        "install-api": "cd api && npm install",
+        "install-website": "cd website && npm install",
+        "install": "npm run install-api && npm run install-website",
+
+        "build-api": "cd api && npm run build",
+        "build-website": "cd website && npm run build",
+        "build": "npm run build-api && npm run build-website",
+
+        "start": "cd api && npm run start"
+    }
+}
