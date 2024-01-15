@@ -1,16 +1,28 @@
+import { useContext, useEffect } from "react";
 import Util from "../utils/util";
+import { AppContext, AppContextType } from "../utils/providers";
+import { useNavigate } from "react-router-dom";
 
 const Signin = () =>{
+    const { loading, user, signin } = useContext(AppContext) as AppContextType;
+    const navigate = useNavigate();
+
     const register = (event: React.FormEvent<HTMLFormElement>) =>{
         event.preventDefault();
 
         const data = Util.extract(event.currentTarget);
 
-        alert(JSON.stringify(data));
+        signin({ email: data.email, username: data["username"], password: data["password"] })
+
+        //alert(JSON.stringify(data.email));
     }
 
+    useEffect(()=>{
+        user && navigate("/");
+    }, [user]);
+
     return (
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ }}>
             <form onSubmit={register} method="POST">
                 <label htmlFor="email">Email</label>
                 <input id="email" type="email" name="email" placeholder="Email" required/>
@@ -26,6 +38,8 @@ const Signin = () =>{
 
                 <input type="submit" value={"submit"} />
             </form>
+            { loading && <div>Loading... </div> }
+            { user && <div>{ JSON.stringify(user) }</div> }
         </div>
     );
 }

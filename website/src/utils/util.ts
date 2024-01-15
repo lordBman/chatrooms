@@ -1,7 +1,7 @@
 import { LooseObject } from "./types";
 
 export default class Util{
-    public static HomeUrl = "http://api.localhost:4000/";
+    public static HomeUrl = "http://localhost:2000/";
     public static months = ["January", "Feburary", "Match", "April", "May", "June", "July", "August", "September", "Octomber", "November", "December"];
     public static colors = ["#4F8CD2", "#D1273B", "#FF9155", "#49AD2C", "#B7579D", "grey"]
 
@@ -34,7 +34,7 @@ export default class Util{
         return init;
     }
 
-    public static extract(form: HTMLFormElement): object{
+    public static extract(form: HTMLFormElement): LooseObject{
         const formData = new FormData(form);
 
         // Create an empty object to store the key-value pairs

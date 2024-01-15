@@ -69,7 +69,7 @@ userRouter.post("/login", async(req, res) =>{
 });
 
 userRouter.get("/logout", (req, res) =>{
-    if(req.cookies.blimited){
+    if(req.cookies.chatroom){
         res.cookie("chatroom", '', {
             expires: new Date(Date.now() + 10 * 300),
             httpOnly: true,
