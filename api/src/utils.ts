@@ -1,6 +1,6 @@
-import { ErrorHandler } from "./config/error";
 import { Response } from "express";
 import HttpStatusCodes from "./constants/HttpStatusCodes";
+import ErrorHandler from "./config/error";
 
 export default function uuid() {
     var h='0123456789abcdef';

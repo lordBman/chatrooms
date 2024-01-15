@@ -13,9 +13,27 @@ datasource db {
 model User {
   id          Int     @id @default(autoincrement())
   email       String  @unique
-  name        String
+  username    String
+  password    String
   rooms       Room[]
   comments    Comment[]
+  members     Members[]
+  session     Session?
+  profile     Profile?
+}
+
+model Session{
+  id          String    @unique
+  userID      Int       @unique
+  user        User      @relation(fields: [userID], references: [id])
+}
+
+model Profile{
+  userID      Int       @unique
+  user        User      @relation(fields: [userID], references: [id])
+
+  description String?
+  path        String?
 }
 
 model Room {
@@ -23,16 +41,26 @@ model Room {
   title       String
   creator     User      @relation(fields: [creatorID], references: [id])  
   creatorID   Int
+  isPrivate  Boolean    @default(false)
   comments    Comment[]
   attachment  String?
+  members     Members[]
+}
+
+model Members{
+  id          Int       @id @default(autoincrement())
+  user        User      @relation(fields: [userID], references: [id])  
+  userID      Int
+  room        Room      @relation(fields: [roomID], references: [id])  
+  roomID      Int
 }
 
 model Comment {
-  id          Int     @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   message     String
-  user        User    @relation(fields: [userID], references: [id])
+  user        User      @relation(fields: [userID], references: [id])
   userID      Int
-  room        Room    @relation(fields: [roomID], references: [id])
+  room        Room      @relation(fields: [roomID], references: [id])
   roomID      Int
   attachment  String?
 }

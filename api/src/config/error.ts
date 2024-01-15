@@ -1,17 +1,18 @@
 import { Response } from "express";
+import HttpStatusCodes from "../constants/HttpStatusCodes";
 
 interface Err{
     error: string, message: string
 }
 
 class ErrorHandler{
-    private errors: { code : number, error: Err}[];
+    private errors: { code : HttpStatusCodes, error: Err}[];
     
     public constructor(){
         this.errors = [];
     }
     
-    add(code: number, error: string, message: string): void{
+    add(code: HttpStatusCodes, error: string, message: string): void{
         const init: Err = { error: error, message: message };
         this.errors.push({ code, error: init });
     }
@@ -32,4 +33,4 @@ class ErrorHandler{
     }
 }
 
-export { ErrorHandler }
+export default ErrorHandler;

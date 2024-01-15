@@ -11,7 +11,7 @@ import HttpStatusCodes from "./constants/HttpStatusCodes";
 
 import { RouteError } from "./utils";
 import morgan from "morgan";
-import chatRouter from "./chatroom/routes";
+import chatRouter from "./routes";
 
 const api = express();
 
@@ -24,7 +24,7 @@ api.use(cookieParser());
 
 api.enable('trust proxy');
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NodeEnv !== "Production") {
     api.use(morgan('dev'));
 }
 
@@ -60,18 +60,4 @@ api.use(( err: Error, _: Request, res: Response, next: NextFunction,) => {
 api.use("/res", express.static(path.resolve(__dirname, 'public'))); 
 api.use("/", chatRouter);
 
-/*app.listen(process.env.PORT, () => {
-    console.log(`Node server started running at post: ${process.env.PORT}`);
-});*/
-
-const app = express();
-
-// Use vhost middleware
-app.use(vhost(/^api\..*/, api)); // API Subdomain
-// Main Domain (Frontend)
-app.use(express.static(path.join(__dirname, 'website')));
-app.get(/^(?!api\.)[^.]*$/, (_req, res) => {
-    res.sendFile(path.join(__dirname, 'website/index.html'));
-});
-
-export default app;
+export default api;

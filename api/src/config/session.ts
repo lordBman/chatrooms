@@ -1,47 +1,58 @@
-import { DBManager } from "./database";
+import { DBManager } from ".";
+import HttpStatusCodes from "../constants/HttpStatusCodes";
 import uuid from "../utils";
 
 export default class Session{
 
-    private async check_users(userID: string, platform:string = "blimited"): Promise<boolean | undefined>{
-        const rows = await DBManager.instance().get(`SELECT * FROM Sessions WHERE userID = ? AND platform = ?`, [userID, platform], "session error");
-        if(rows && rows.length > 0){
+    private async check_users(userID: number): Promise<boolean | undefined>{
+        const result = await DBManager.instance().client.session.findFirst({ where:{ userID: userID }});
+        if(result){
             return true;
         }
         return undefined;
     }
 		
-    async get(id: string, platform:string = "blimited"): Promise<string | undefined>{
-        const rows = await DBManager.instance().get(`SELECT userID FROM Sessions WHERE id = ? AND platform = ?`, [id, platform], "Sessions error");
-        if(rows){
-            if(rows && rows.length > 0){
-                return rows[0].userID;
+    async get(id: string): Promise<number | undefined>{
+        try{
+            const result = await DBManager.instance().client.session.findFirst({ where:{ id: id }});
+            if(result){
+                return result.userID;
             }else{
-                DBManager.instance().errorHandler.add(404, "", "session not found or expired");
+                DBManager.instance().errorHandler.add(HttpStatusCodes.NOT_FOUND, "", "session not found or expired");
             }
+        }catch(error){
+            DBManager.instance().errorHandler.add(HttpStatusCodes.NOT_FOUND, `${error}`, "session not found or expired");
         }
         return undefined;
     }
 		
-	async create(userID: string, platform:string = "blimited"): Promise<string | undefined>{
+	async create(userID: number): Promise<string | undefined>{
         const token = uuid();
-        const check_result = await this.check_users(userID, platform);
+        const check_result = await this.check_users(userID);
 
-        if(check_result && await this.delete(userID, platform)){
-            return await this.create(userID, platform);
+        if(check_result && await this.delete(userID)){
+            return await this.create(userID);
         }else{
-            const init = await DBManager.instance().insert(`INSERT INTO Sessions(id, userID, platform) VALUES(?, ?, ?)`, [token, userID, platform], "unable to create session");
-            if(init){
-                return token;
+            try{
+                const init = await DBManager.instance().client.session.create({ data: { userID: userID, id: token } });
+                if(init){
+                    return token;
+                }
+            }catch(error){
+                DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "session error");
             }
         }
         return undefined;
     }
 		
-	async delete(userID: string, platform:string = "blimited"): Promise<boolean | undefined>{
-        const init = await DBManager.instance().update(`DELETE from Sessions WHERE userID = ? AND platform = ?`, [userID, platform], "unable to delete previous session");
-        if(init){
-            return true;
+	async delete(userID: number): Promise<boolean | undefined>{
+        try{
+            const init = await DBManager.instance().client.session.delete({ where: { userID: userID } });
+            if(init){
+                return true;
+            }
+        }catch(error){
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "session error");
         }
         return undefined;
 	}

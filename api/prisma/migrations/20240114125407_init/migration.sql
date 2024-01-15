@@ -10,8 +10,18 @@ CREATE TABLE "Room" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "title" TEXT NOT NULL,
     "creatorID" INTEGER NOT NULL,
+    "isPrivate" BOOLEAN NOT NULL DEFAULT false,
     "attachment" TEXT,
     CONSTRAINT "Room_creatorID_fkey" FOREIGN KEY ("creatorID") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Members" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "userID" INTEGER NOT NULL,
+    "roomID" INTEGER NOT NULL,
+    CONSTRAINT "Members_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Members_roomID_fkey" FOREIGN KEY ("roomID") REFERENCES "Room" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
