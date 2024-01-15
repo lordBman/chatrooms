@@ -1,3 +1,5 @@
+import { LooseObject } from "./types";
+
 export default class Util{
     public static HomeUrl = "http://api.localhost:4000/";
     public static months = ["January", "Feburary", "Match", "April", "May", "June", "July", "August", "September", "Octomber", "November", "December"];
@@ -30,5 +32,20 @@ export default class Util{
             }
         }
         return init;
+    }
+
+    public static extract(form: HTMLFormElement): object{
+        const formData = new FormData(form);
+
+        // Create an empty object to store the key-value pairs
+        let obj: LooseObject = {};
+
+        // Loop through the entries of the FormData object
+        formData.forEach((value, key) => {
+            // Assign each value to the corresponding key in the object
+            obj[key] = value.toString();
+        });
+
+        return obj;
     }
 }
