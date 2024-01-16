@@ -29,7 +29,7 @@ export default class Room {
 
     static async details(id: number): Promise<RoomDetails | undefined>{
         try{
-            const result = await DBManager.instance().client.room.findFirst({ where: { id }, include:{ creator:  { include: { profile: true } }, members: true, comments: { include: { user: { include:{ profile: true } } } } } })
+            const result = await DBManager.instance().client.room.findFirst({ where: { id }, include:{ creator:  { include: { profile: true } }, comments: { include: { user: { include:{ profile: true } } } } } })
             if(result){
                 return result;
             }
