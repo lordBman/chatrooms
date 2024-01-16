@@ -3,8 +3,8 @@ import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
 
 export interface ProfileDetails{
-    description?: string,
-    path?: string 
+    description: string | null,
+    path: string | null
 }
 
 export default class Profile {    
@@ -24,7 +24,7 @@ export default class Profile {
         try{
             const result = await DBManager.instance().client.profile.findFirst({ where: { userID } })
             if(result){
-                return { description: result.description || undefined, path: result.path || undefined };
+                return result;
             }
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "profile checking error");

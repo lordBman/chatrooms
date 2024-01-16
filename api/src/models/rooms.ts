@@ -1,46 +1,54 @@
 import { DBManager } from "../config";
 import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
-import Profile, { ProfileDetails } from "./profile";
+import { CommentDetails } from "./comments";
+import User, { UserDetails } from "./users";
 
-export interface UserDetails{
-    username: string, email: string, profile: ProfileDetails | null
+export interface RoomDetails{
+    id: number,
+    title: string,
+    creator: UserDetails,
+    isPrivate: boolean,
+    comments: CommentDetails[],
+    attachment: string | null,
+    members: UserDetails[]
 }
 
-export default class User {    
-    static async check_users(email: string, username: string): Promise<boolean | undefined>{
+export default class Room {    
+    static async check_rooms(title: string): Promise<boolean | undefined>{
         try{
-            const result = await DBManager.instance().client.user.findFirst({ where: { email, username } })
+            const result = await DBManager.instance().client.room.findFirst({ where: { title } })
             if(result){
                 return true;
             }
         }catch(error){
-            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "user checking error");
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "rooms checking error");
         }
         return undefined;
     }
 
-    static async details(userID: number): Promise<UserDetails | undefined>{
+    static async details(id: number): Promise<RoomDetails | undefined>{
         try{
-            const result = await DBManager.instance().client.user.findFirst({ where: { id: userID }, include:{ profile: true } })
+            const result = await DBManager.instance().client.room.findFirst({ where: { id }, include:{ creator:  { include: { profile: true } }, members: true, comments: { include: { user: { include:{ profile: true } } } } } })
             if(result){
-                return result ;
+                return result;
             }
         }catch(error){
-            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "user checking error");
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while getting rooms details");
         }
         return undefined;
     }
 
     static async login(credentials:{ email?:string, username?: string, password: string }): Promise<{user: UserDetails, sessionID: string} | undefined>{
         try{
-            const result = await DBManager.instance().client.user.findFirst({ where:{ OR:[ { email: credentials.email }, { username: credentials.username } ] }, include:{ profile: true } });
+            const result = await DBManager.instance().client.user.findFirst({ where:{ OR:[ { email: credentials.email }, { username: credentials.username } ] } });
             if(result){
                 if(result.password === credentials.password){
                     const session = new Session();
                     const id = await session.create(result.id);
+                    const profile = await Profile.details(result.id);
                     if(id){
-                        return { sessionID: id, user: result };
+                        return { sessionID: id, user: { ...result, profile} };
                     }
                 }else{
                     DBManager.instance().errorHandler.add(HttpStatusCodes.UNAUTHORIZED, ``, "incorrect password, please try again");

@@ -63,4 +63,5 @@ model Comment {
   room        Room      @relation(fields: [roomID], references: [id])
   roomID      Int
   attachment  String?
+  posted      DateTime  @default(now())
 }
