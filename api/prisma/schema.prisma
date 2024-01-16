@@ -41,10 +41,21 @@ model Room {
   title       String
   creator     User      @relation(fields: [creatorID], references: [id])  
   creatorID   Int
-  isPrivate  Boolean    @default(false)
+  isPrivate   Boolean    @default(false)
   comments    Comment[]
   attachment  String?
   members     Members[]
+  tags    Tag[]
+}
+
+model Tag{
+  slurg       String
+  name        String
+  
+  roomID      Int
+  room        Room        @relation(fields: [roomID], references: [id])
+
+  @@id([slurg, roomID])
 }
 
 model Members{
