@@ -23,8 +23,10 @@ class ErrorHandler{
             this.errors.forEach((value) =>{
                 console.log(value.error.error + "\n");
             });
+            this.errors = [];
             return response.status(first.code).json({"message": first.error.message});
         }
+        this.errors = [];
         return response.status(500).json({"message": "obsolute server breakdown"});
     }
     

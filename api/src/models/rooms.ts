@@ -3,7 +3,7 @@ import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
 import Comment, { CommentDetails } from "./comments";
 import Tag, { TagDetails } from "./tags";
-import User, { UserDetails } from "./users";
+import { UserDetails } from "./users";
 
 export interface RoomDetails{
     id: number,
@@ -12,7 +12,7 @@ export interface RoomDetails{
     isPrivate: boolean,
     comments: CommentDetails[],
     attachment: string | null,
-    members?: UserDetails[],
+    members?: { user: UserDetails }[],
     tags: TagDetails[]
 }
 
@@ -86,19 +86,19 @@ export default class Room {
                             { likes: { some: { userID, like: true } } },
                             // Rooms with tags similar to rooms liked by the user
                             { tags: { some: { room: { likes: { some: { userID, like: true,} }}}},},
-                            ], },
+                        ],},
                             // Exclude private rooms unless the user is a member
-                            { OR: [
+                        { OR: [
                             { isPrivate: false },
                             { members: { some: { userID},},},
-                            ],
-                        }
+                            { creatorID: userID },
+                        ],}
                     ],
                 },
                 // You can adjust this based on your requirements
                 orderBy: { posted: 'desc',},
                 // Include additional data if needed
-                include: {creator: true, comments:{ include:{ user: true } }, likes: true, tags: true, members: true, },
+                include: {creator: true, comments:{ include:{ user: true } }, likes: true, tags: true, members: { include: { user: true } }, },
             });
             return result;
         }catch(error){
