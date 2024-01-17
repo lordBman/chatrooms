@@ -4,7 +4,7 @@ import HttpStatusCodes from "../constants/HttpStatusCodes";
 import Profile, { ProfileDetails } from "./profile";
 
 export interface UserDetails{
-    username: string, email: string, profile: ProfileDetails | null
+    username: string, email: string, profile?: ProfileDetails | null
 }
 
 export default class User {    

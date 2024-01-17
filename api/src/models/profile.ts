@@ -3,8 +3,8 @@ import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
 
 export interface ProfileDetails{
-    description: string | null,
-    path: string | null
+    description?: string | null,
+    path?: string | null
 }
 
 export default class Profile {    

@@ -23,11 +23,11 @@ export default class Comment {
     }
 
     static async get(roomID: number, page: number = 1): Promise<CommentDetails[] | undefined>{
-        const usersPerPage = 10; // Number of users to display per page
+        const commentsPerPage = 10; // Number of users to display per page
         try{
             const result = await DBManager.instance().client.comment.findMany({
-                skip: (page - 1) * usersPerPage, // Skip the appropriate number of records
-                take: usersPerPage, // Take only the specified number of records
+                skip: (page - 1) * commentsPerPage, // Skip the appropriate number of records
+                take: commentsPerPage, // Take only the specified number of records
                 where: { roomID }, 
                 include: { user: { include: { profile: true } } }, 
                 orderBy: { posted: "desc" } })
@@ -35,7 +35,7 @@ export default class Comment {
                 return result;
             }
         }catch(error){
-            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while getting comment");
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while getting comments");
         }
         return undefined;
     }

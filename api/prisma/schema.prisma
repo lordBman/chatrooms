@@ -11,15 +11,17 @@ datasource db {
 }
 
 model User {
-  id          Int     @id @default(autoincrement())
-  email       String  @unique
-  username    String
-  password    String
-  rooms       Room[]
-  comments    Comment[]
-  members     Members[]
-  session     Session?
-  profile     Profile?
+  id            Int     @id @default(autoincrement())
+  email         String  @unique
+  username      String
+  password      String
+  rooms         Room[]
+  comments      Comment[]
+  members       Members[]
+  session       Session?
+  profile       Profile?
+  commentLikes  CommentLikes[]
+  roomLikes     RoomLikes[]
 }
 
 model Session{
@@ -41,11 +43,23 @@ model Room {
   title       String
   creator     User      @relation(fields: [creatorID], references: [id])  
   creatorID   Int
-  isPrivate   Boolean    @default(false)
+  isPrivate   Boolean   @default(false)
+  posted      DateTime  @default(now())
   comments    Comment[]
   attachment  String?
   members     Members[]
-  tags    Tag[]
+  tags        Tag[]
+  likes       RoomLikes[]
+}
+
+model RoomLikes{
+  user        User      @relation(fields: [userID], references: [id])  
+  userID      Int
+  room        Room      @relation(fields: [roomID], references: [id])  
+  roomID      Int
+  like        Boolean?
+
+  @@id([userID, roomID])
 }
 
 model Tag{
@@ -53,17 +67,18 @@ model Tag{
   name        String
   
   roomID      Int
-  room        Room        @relation(fields: [roomID], references: [id])
+  room        Room       @relation(fields: [roomID], references: [id])
 
   @@id([slurg, roomID])
 }
 
 model Members{
-  id          Int       @id @default(autoincrement())
   user        User      @relation(fields: [userID], references: [id])  
   userID      Int
   room        Room      @relation(fields: [roomID], references: [id])  
   roomID      Int
+
+  @@id([userID, roomID])
 }
 
 model Comment {
@@ -75,4 +90,15 @@ model Comment {
   roomID      Int
   attachment  String?
   posted      DateTime  @default(now())
+  likes       CommentLikes[]
+}
+
+model CommentLikes{
+  user        User      @relation(fields: [userID], references: [id])  
+  userID      Int
+  comment     Comment   @relation(fields: [commentID], references: [id])  
+  commentID   Int
+  like        Boolean?
+
+  @@id([userID, commentID])
 }
