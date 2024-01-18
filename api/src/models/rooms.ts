@@ -42,13 +42,14 @@ export default class Room {
         return undefined;
     }
 
-    static async create(creatorID: number, title: string, isPrivate: boolean, tags: string[]): Promise<RoomDetails | undefined>{
+    static async create(sessionID: string, title: string, isPrivate: boolean, tags: string[]): Promise<RoomDetails | undefined>{
         try{
+            const creatorID = await new Session().get(sessionID);
             if(await Room.check_rooms(title)){
                 DBManager.instance().errorHandler.add(HttpStatusCodes.ALREADY_REPORTED, "", "Room with the same title already exists");
             }else{
                 const result = await DBManager.instance().client.room.create({ 
-                    data:{ creatorID, title, isPrivate },
+                    data:{ creatorID: creatorID!, title, isPrivate },
                     include: { creator: { include:{ profile: true } }, comments: { include: { user: true } } } });
                 if(result){
                     const initTags = await Tag.create(result.id, tags);

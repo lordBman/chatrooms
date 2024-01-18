@@ -1,10 +1,12 @@
 import { useContext } from "react";
-import { AppContext, AppContextType } from "../utils/providers";
+import UserProvider, { AppContext, AppContextType } from "../utils/providers/app";
+import { UserContext, UserContextType } from "../utils/providers/user";
 
 const Home = () =>{
-    const { loading } = useContext(AppContext) as AppContextType;
+    const appContext = useContext(AppContext) as AppContextType;
+    const userContext = useContext(UserContext) as UserContextType;
 
-    if(loading){
+    if(appContext.loading || userContext.loading){
         return <div>Loading...</div>
     }
     return (
@@ -12,4 +14,10 @@ const Home = () =>{
     );
 }
 
-export default Home;
+export default () =>{
+    return (
+        <UserProvider>
+            <Home />
+        </UserProvider>
+    );
+};

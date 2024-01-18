@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AppContext, AppContextType } from "../utils/providers";
+import { AppContext, AppContextType } from "../utils/providers/user";
 import { Link } from "react-router-dom";
 
 const Header = () =>{

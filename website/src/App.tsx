@@ -1,6 +1,6 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { Home, NotFound, Signin } from "./pages";
-import AppProvider from "./utils/providers";
+import AppProvider from "./utils/providers/user";
 
 const App = () =>{
   return (

@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useMutation } from 'react-query';
-import { User } from './response';
-import { axiosInstance } from './authcontext';
+import { User } from '../response';
+import { axiosInstance } from '../axios_context';
 
-export type AppContextType = {
+export type UserContextType = {
     user?: User;
     loading: boolean;
     isError: boolean;
@@ -15,9 +15,9 @@ export type AppContextType = {
     refresh: () => void;
 };
 
-export const AppContext = React.createContext<AppContextType | null>(null);
+export const UserContext = React.createContext<UserContextType | null>(null);
 
-const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+const UserProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const [state, setState] = useState<{ loading: boolean, isError: boolean, message: any }>({loading: false, isError: false, message: ""});
     const [user, setUser] = useState<User>();
 
@@ -87,8 +87,8 @@ const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     React.useEffect(()=> { init() }, [init, user]);
 
     return (
-        <AppContext.Provider value={{ ...state, user, refresh, signin, login, logout }}>{ children }</AppContext.Provider>
+        <UserContext.Provider value={{ ...state, user, refresh, signin, login, logout }}>{ children }</UserContext.Provider>
     );
 }
 
-export default AppProvider;
+export default UserProvider;
