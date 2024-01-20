@@ -1,9 +1,9 @@
 import { useContext } from "react";
-import { AppContext, AppContextType } from "../utils/providers/user";
+import { UserContext, UserContextType } from "../utils/providers/user";
 import { Link } from "react-router-dom";
 
 const Header = () =>{
-    const { user, logout } = useContext(AppContext) as AppContextType;
+    const { user, logout } = useContext(UserContext) as UserContextType;
 
     if(!user){
         return <Link to={"/signin"}>Sign In</Link>

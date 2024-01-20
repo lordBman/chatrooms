@@ -1,18 +1,11 @@
-import { HashRouter, Route, Routes } from "react-router-dom";
-import { Home, NotFound, Signin } from "./pages";
-import AppProvider from "./utils/providers/user";
+import Pages from "./pages";
+import { UserProvider } from "./utils/providers";
 
 const App = () =>{
   return (
-    <AppProvider>
-      <HashRouter>
-        <Routes>
-          <Route index Component={Home}/>
-          <Route path="/signin" Component={Signin} />
-          <Route path="*" Component={NotFound}/>
-        </Routes>
-      </HashRouter>
-    </AppProvider>
+    <UserProvider>
+      <Pages />
+    </UserProvider>
   );
 }
 

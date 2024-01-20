@@ -12,6 +12,7 @@ export type AppContextType = {
     message: any;
     next: CallableFunction;
     refresh: CallableFunction;
+    create: CallableFunction;
 };
 
 export const AppContext = React.createContext<AppContextType | null>(null);
@@ -47,15 +48,31 @@ const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
         },
     });
 
+    const createMutation = useMutation({
+        mutationKey: ["rooms"],
+        mutationFn: (data: { title: string, tags: string[] }) => axiosInstance.post(`/rooms`, data),
+        onMutate:()=>setState(init => { return { ...init, loading: true, isError: false, message: `Creating Room, please wait...`}}),
+        onSuccess(data) {
+            setState(init => { return {...init, loading: false, isError: false, message: `done`}});
+
+            let initRooms: Room[] = rooms ? [...rooms, data.data] : [data.data];
+            setRooms(initRooms);
+        },
+        onError(error) {
+            setState(init => { return { ...init, loading: false, isError: true, message: JSON.stringify(error) }});
+        },
+    });
+
     const refresh = async () => {};
     const next = (page: number) => nextMutation.mutate(page);
+    const create = (data: { title: string, tags: string[] }) => createMutation.mutate(data);
 
     const init = React.useCallback(async ()=> initMutation.mutate(), [user]);
 
     React.useEffect(()=> { init() }, [init, user]);
 
     return (
-        <AppContext.Provider value={{ ...state, rooms, refresh, next }}>{ children }</AppContext.Provider>
+        <AppContext.Provider value={{ ...state, rooms, refresh, next, create }}>{ children }</AppContext.Provider>
     );
 }
 

@@ -1,7 +1,7 @@
 import { Link, Navigate, useLocation } from "react-router-dom";
 import server_down from "./assets/images/undraw_server_down_s-4-lk.svg";
 import { FaAssistiveListeningSystems, FaHome, FaServer } from "react-icons/fa";
-import { AppContext, AppContextType } from "./providers/user";
+import { UserContext, UserContextType } from "./providers/user";
 import { useContext } from "react";
 import { Loading } from "../components";
 import Util from "./util";
@@ -26,7 +26,7 @@ interface PrivateRouteProps{
 }
 
 export const PrivateRoute: React.FC<PrivateRouteProps> = ({Element, ...others}) =>{
-    const { loading, user } = useContext(AppContext) as AppContextType;
+    const { loading, user } = useContext(UserContext) as UserContextType;
     let isAuthenticated = false;
     const location = useLocation();
     const prevRoute = location.pathname.length >  1 ? Util.replaceAll(location.pathname, "/", "_").substring(1) : "";

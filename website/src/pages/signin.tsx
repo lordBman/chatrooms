@@ -1,10 +1,10 @@
 import { useContext, useEffect } from "react";
 import Util from "../utils/util";
-import { AppContext, AppContextType } from "../utils/providers/user";
+import { UserContext, UserContextType } from "../utils/providers/user";
 import { useNavigate } from "react-router-dom";
 
 const Signin = () =>{
-    const { loading, user, signin, login } = useContext(AppContext) as AppContextType;
+    const { loading, user, signin, login } = useContext(UserContext) as UserContextType;
     const navigate = useNavigate();
 
     const register = (event: React.FormEvent<HTMLFormElement>) =>{
