@@ -1,3 +1,4 @@
+import { Likes } from ".";
 import { DBManager } from "../config";
 import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
@@ -7,13 +8,14 @@ export interface CommentDetails{
     id: number,
     message: string,
     user: UserDetails,
-    attachment: string | null
+    attachment: string | null,
+    likes: Likes[]
 }
 
 export default class Comment {    
     static async details(id: number): Promise<CommentDetails | undefined>{
         try{
-            const result = await DBManager.instance().client.comment.findFirst({ where: { id }, include:{ user: { include: { profile: true } } } })
+            const result = await DBManager.instance().client.comment.findFirst({ where: { id }, include:{ user: { include: { profile: true } }, likes: { include: { user: true } } } })
             if(result){
                 return result;
             }
@@ -30,7 +32,7 @@ export default class Comment {
                 skip: (page - 1) * commentsPerPage, // Skip the appropriate number of records
                 take: commentsPerPage, // Take only the specified number of records
                 where: { roomID }, 
-                include: { user: { include: { profile: true } } }, 
+                include: { user: { include: { profile: true } }, likes: { include: { user: true } } }, 
                 orderBy: { posted: "desc" } })
             if(result){
                 return result;
@@ -47,7 +49,7 @@ export default class Comment {
             
             const comment = await DBManager.instance().client.comment.create({
                 data: { message: message, userID: userID!, roomID },
-                include: { user: true }
+                include: { user: true, likes: { include: { user: true } } }
             });
             
             await DBManager.instance().client.room.update({

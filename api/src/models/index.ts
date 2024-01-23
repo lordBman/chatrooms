@@ -5,16 +5,9 @@ import Room from "./rooms";
 import Tag from "./tags";
 import User from "./users";
 
-export interface CommentLikes{
+export interface Likes{
     user: User,
-    commentID: number,
-    like: boolean
-}
-
-export interface RoomLikes{
-    user: User,
-    commentID: number,
-    like: boolean
+    like: boolean | null
 }
 
 export { Comment, Member, Profile, Room, Tag, User }

@@ -65,7 +65,7 @@ model RoomLikes{
 }
 
 model Tag{
-  slurg       String          @unique
+  slurg       String
   name        String
   
   roomID      Int

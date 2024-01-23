@@ -1,4 +1,4 @@
-import { RoomLikes } from ".";
+import { Likes } from ".";
 import { DBManager } from "../config";
 import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
@@ -15,7 +15,7 @@ export interface RoomDetails{
     attachment: string | null,
     members?: { user: UserDetails }[],
     tags: TagDetails[],
-    likes: RoomLikes[]
+    likes: Likes[]
 }
 
 export default class Room {    
@@ -33,7 +33,7 @@ export default class Room {
 
     static async details(id: number): Promise<RoomDetails | undefined>{
         try{
-            const result = await DBManager.instance().client.room.findFirst({ where: { id }, include:{ creator:  { include: { profile: true } }, tags: true } });
+            const result = await DBManager.instance().client.room.findFirst({ where: { id }, include:{ creator:  { include: { profile: true } }, tags: true, likes: { include: { user: true } } } });
             if(result){
                 const comments = await Comment.get(id);
                 return { ...result, comments: comments! };
@@ -52,7 +52,10 @@ export default class Room {
             }else{
                 const result = await DBManager.instance().client.room.create({ 
                     data:{ creatorID: creatorID!, title, isPrivate },
-                    include: { creator: { include:{ profile: true } }, comments: { include: { user: true } }, likes: true, } });
+                    include: { 
+                        creator: { include:{ profile: true } }, 
+                        comments: { include: { user: true, likes: { include: { user: true } } } }, 
+                        likes: { include: { user: true } }, } });
                 if(result){
                     const initTags = await Tag.create(result.id, tags);
                     return { ...result, tags: initTags! }
@@ -89,7 +92,11 @@ export default class Room {
                 // You can adjust this based on your requirements
                 orderBy: { lastCommented: 'desc' },
                 // Include additional data if needed
-                include: {creator: true, comments:{ include:{ user: true } }, likes: true, tags: true, members: { include: { user: true } }, },
+                include: {
+                    creator: true,
+                    comments:{ include:{ user: true, likes: { include: { user: true } } } },
+                    tags: true, members: { include: { user: true } },
+                    likes: { include: { user: true } } },
             });
             return result;
         }catch(error){
@@ -116,7 +123,11 @@ export default class Room {
                 // You can adjust this based on your requirements
                 orderBy: { lastCommented: 'desc' },
                 // Include additional data if needed
-                include: {creator: true, comments:{ include:{ user: true } }, likes: true, tags: true, members: { include: { user: true, } }, },
+                include: {
+                    creator: true,
+                    comments:{ include:{ user: true, likes: { include: { user: true } } } },
+                    likes: { include: { user: true } },
+                    tags: true, members: { include: { user: true, } }, },
             });
             return result;
         }catch(error){
