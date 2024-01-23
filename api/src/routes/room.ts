@@ -1,17 +1,18 @@
 import express from "express";
-import Session from "../config/session";
-import User from "../models/users";
 import { DBManager } from "../config";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
 import Room from "../models/rooms";
 
-export const roomRouter = express.Router();
+const roomRouter = express.Router();
 
 roomRouter.get("/", async(req, res) =>{
     const sessionID = req.cookies.chatroom;
     const page:  number = Number.parseInt((req.query.page as string) || "1");
+    const id: number | undefined = req.query.id ?  Number.parseInt(req.query.id as string) : undefined;
 
-    const rooms = await Room.get({ sessionID, page });
+    console.log(`room id:${id}`);
+
+    const rooms = id ? await Room.details(id) : await Room.get({ sessionID, page });
     if(DBManager.instance().errorHandler.has_error()){
         return DBManager.instance().errorHandler.display(res);
     }
@@ -21,7 +22,8 @@ roomRouter.get("/", async(req, res) =>{
 roomRouter.post("/", async(req, res) =>{
     if(req.cookies.chatroom){
         if(req.body.title){
-            let room = await Room.create(req.cookies.chatroom, req.body.title, req.body.isPrivate || false, req.body.tags || []);
+            const isPrivate = req.body.isPrivate === "true";
+            let room = await Room.create(req.cookies.chatroom, req.body.title, isPrivate, req.body.tags || []);
             if(room){
                 return res.status(HttpStatusCodes.CREATED).send(room);
             }

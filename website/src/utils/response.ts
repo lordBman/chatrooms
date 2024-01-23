@@ -17,7 +17,8 @@ export interface Comment{
     id: number,
     message: string,
     user: User,
-    attachment: string | null
+    attachment: string | null,
+    posted: string
 }
 
 export interface Tag{

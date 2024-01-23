@@ -1,5 +1,5 @@
-import { Link, Navigate, useLocation } from "react-router-dom";
-import server_down from "./assets/images/undraw_server_down_s-4-lk.svg";
+import { Link, Redirect, useLocation } from "react-router-dom";
+//import server_down from "./assets/images/undraw_server_down_s-4-lk.svg";
 import { FaAssistiveListeningSystems, FaHome, FaServer } from "react-icons/fa";
 import { UserContext, UserContextType } from "./providers/user";
 import { useContext } from "react";
@@ -34,8 +34,8 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({Element, ...others}) 
 
     if(loading){
         return (<Loading />);
-    }else if(!user){
-        return (<Navigate to={`/signin/${prevRoute}`} />);
+    }else if(!user && !loading){
+        return (<Redirect to={`/signin/${prevRoute}`} />);
     }
 
     if(user){
@@ -44,7 +44,7 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({Element, ...others}) 
     
     return isAuthenticated ? <Element {...others} /> : (
         <div style={{display: "flex", width: "100dvw", height:"100dvh", justifyContent: "center", alignItems: "center", flexDirection:"column"}}>
-            <img src={server_down} style={{minWidth:  "200px", maxWidth:"500px"}}/>
+            <img style={{minWidth:  "200px", maxWidth:"500px"}}/>
             <div className="mt-3 mx-3 text-center" style={{color: "gray", fontSize:"24px", maxWidth: "800px"}}><FaServer size={30} /> Sorry you are not authorized to view this page. you must be an admin, client or worker to view this page <FaAssistiveListeningSystems size={30} /></div>
             <Link to={"/"} className="btn btn-outline-primary mt-3" style={{borderRadius: "20px"}}><FaHome size={20} /> to Homepage</Link> 
         </div>

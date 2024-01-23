@@ -1,4 +1,5 @@
 import { DBManager } from "../config";
+import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
 import User, { UserDetails } from "./users"
 
@@ -38,5 +39,25 @@ export default class Comment {
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while getting comments");
         }
         return undefined;
+    }
+
+    static async create(sessionID: string, roomID: number, message: string ): Promise<CommentDetails | undefined> {
+        try{
+            let userID = await new Session().get(sessionID);
+            
+            const comment = await DBManager.instance().client.comment.create({
+                data: { message: message, userID: userID!, roomID },
+                include: { user: true }
+            });
+            
+            await DBManager.instance().client.room.update({
+                where: { id: roomID, },
+                data: { lastCommented: comment.posted },
+            });
+            
+            return comment;
+        }catch(error){
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered whileposting comments");
+        }
     }
 }

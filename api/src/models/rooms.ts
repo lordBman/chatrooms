@@ -1,3 +1,4 @@
+import { RoomLikes } from ".";
 import { DBManager } from "../config";
 import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
@@ -13,7 +14,8 @@ export interface RoomDetails{
     comments: CommentDetails[],
     attachment: string | null,
     members?: { user: UserDetails }[],
-    tags: TagDetails[]
+    tags: TagDetails[],
+    likes: RoomLikes[]
 }
 
 export default class Room {    
@@ -50,7 +52,7 @@ export default class Room {
             }else{
                 const result = await DBManager.instance().client.room.create({ 
                     data:{ creatorID: creatorID!, title, isPrivate },
-                    include: { creator: { include:{ profile: true } }, comments: { include: { user: true } } } });
+                    include: { creator: { include:{ profile: true } }, comments: { include: { user: true } }, likes: true, } });
                 if(result){
                     const initTags = await Tag.create(result.id, tags);
                     return { ...result, tags: initTags! }
@@ -70,40 +72,55 @@ export default class Room {
             if(query.sessionID){
                 userID = await new Session().get(query.sessionID);
             }
-            /*const result = await DBManager.instance().client.room.findMany({
-                skip: (page - 1) * roomsPerPage, // Skip the appropriate number of records
-                take: roomsPerPage, // Take only the specified number of records 
-                include: { creator: { include: { profile: true } }, tags: true, comments:{ include:{user: { include: { profile: true } } } } }, 
-                orderBy: { posted: "desc" } })*/
             const result = await DBManager.instance().client.room.findMany({
                 take: roomsPerPage,
                 skip: (page - 1) * roomsPerPage,
                 where: {
-                    AND:[
-                        { OR: [
-                            // Rooms with the latest comments
-                            { comments: { some: {} } },
-                            // Rooms liked by the user
-                            { likes: { some: { userID, like: true } } },
+                    OR:[ 
+                        { members: { some: { userID},},},
+                        { creatorID: userID },
+                        { AND: [
                             // Rooms with tags similar to rooms liked by the user
                             { tags: { some: { room: { likes: { some: { userID, like: true,} }}}},},
-                        ],},
-                            // Exclude private rooms unless the user is a member
-                        { OR: [
                             { isPrivate: false },
-                            { members: { some: { userID},},},
-                            { creatorID: userID },
-                        ],}
+                        ]}
                     ],
                 },
                 // You can adjust this based on your requirements
-                orderBy: { posted: 'desc',},
+                orderBy: { lastCommented: 'desc' },
                 // Include additional data if needed
                 include: {creator: true, comments:{ include:{ user: true } }, likes: true, tags: true, members: { include: { user: true } }, },
             });
             return result;
         }catch(error){
-            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while getting comment");
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while getting rooms");
+        }
+    }
+
+    static async dashboard(query: {sessionID: string, page?: number}): Promise<RoomDetails[] | undefined>{
+        const roomsPerPage = 14; // Number of users to display per page
+        const page = query.page || 1;
+        try{
+            let userID = await new Session().get(query.sessionID);
+
+            const result = await DBManager.instance().client.room.findMany({
+                take: roomsPerPage,
+                skip: (page - 1) * roomsPerPage,
+                where: {
+                    OR: [
+                        { creatorID: userID }, // Rooms created by the user
+                        { members: { some: { userID } },}, // Rooms where the user is a member
+                        { comments: { some: { userID },},}, // Rooms where the user has commented
+                    ],
+                },
+                // You can adjust this based on your requirements
+                orderBy: { lastCommented: 'desc' },
+                // Include additional data if needed
+                include: {creator: true, comments:{ include:{ user: true } }, likes: true, tags: true, members: { include: { user: true, } }, },
+            });
+            return result;
+        }catch(error){
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while getting rooms");
         }
     }
 }

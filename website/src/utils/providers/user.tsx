@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { User } from '../response';
 import { axiosInstance } from '../axios_context';
 
@@ -18,7 +18,7 @@ export type UserContextType = {
 export const UserContext = React.createContext<UserContextType | null>(null);
 
 const UserProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-    const [state, setState] = useState<{ loading: boolean, isError: boolean, message: any }>({loading: false, isError: false, message: ""});
+    const [state, setState] = useState<{ loading: boolean, isError: boolean, message: any }>({loading: true, isError: false, message: `Loading, please wait...`});
     const [user, setUser] = useState<User>();
 
     const logoutMutation = useMutation({
@@ -60,10 +60,9 @@ const UserProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
         },
     });
 
-    const initMutation = useMutation({
-        mutationKey: ["user"],
-        mutationFn: () => axiosInstance.get("/users"),
-        onMutate:()=>setState(init => { return { ...init, loading: true, isError: false, message: `Loading, please wait...`}}),
+    useQuery({
+        queryKey: ["user"],
+        queryFn: () => axiosInstance.get("/users"),
         onSuccess(data) {
             setState(init => { return {...init, loading: false, isError: false, message: `done`}}),
             setUser(data.data);
@@ -77,14 +76,6 @@ const UserProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const login = (cred: { email?:string, username?: string, password: string }) => loginMutation.mutate(cred);
     const logout = () => logoutMutation.mutate();
     const signin = (cred: { email:string, username: string, password: string }) => signupMutation.mutate(cred);
-
-    const init = React.useCallback(async ()=>{
-        if(!user){
-            initMutation.mutate();
-        }
-    }, [user]);
-
-    React.useEffect(()=> { init() }, [init, user]);
 
     return (
         <UserContext.Provider value={{ ...state, user, refresh, signin, login, logout }}>{ children }</UserContext.Provider>

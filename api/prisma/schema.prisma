@@ -11,9 +11,9 @@ datasource db {
 }
 
 model User {
-  id            Int     @id @default(autoincrement())
-  email         String  @unique
-  username      String  @unique
+  id            Int         @id @default(autoincrement())
+  email         String      @unique
+  username      String      @unique
   password      String
   rooms         Room[]
   comments      Comment[]
@@ -25,37 +25,39 @@ model User {
 }
 
 model Session{
-  id          String    @unique
-  userID      Int       @unique
-  user        User      @relation(fields: [userID], references: [id])
+  id          String      @unique
+  userID      Int         @unique
+  user        User        @relation(fields: [userID], references: [id])
 }
 
 model Profile{
-  userID      Int       @unique
-  user        User      @relation(fields: [userID], references: [id])
+  userID      Int         @unique
+  user        User        @relation(fields: [userID], references: [id])
 
   description String?
   path        String?
 }
 
 model Room {
-  id          Int       @id @default(autoincrement())
-  title       String
-  creator     User      @relation(fields: [creatorID], references: [id])  
-  creatorID   Int
-  isPrivate   Boolean   @default(false)
-  posted      DateTime  @default(now())
-  comments    Comment[]
-  attachment  String?
-  members     Members[]
-  tags        Tag[]
-  likes       RoomLikes[]
+  id                Int           @id @default(autoincrement())
+  title             String
+  creator           User          @relation(fields: [creatorID], references: [id])  
+  creatorID         Int
+  isPrivate         Boolean       @default(false)
+  posted            DateTime      @default(now())
+  lastCommented     DateTime      @default(now())
+  attachment        String?
+  
+  comments          Comment[]
+  members           Members[]
+  tags              Tag[]
+  likes             RoomLikes[]
 }
 
 model RoomLikes{
-  user        User      @relation(fields: [userID], references: [id])  
+  user        User            @relation(fields: [userID], references: [id])  
   userID      Int
-  room        Room      @relation(fields: [roomID], references: [id])  
+  room        Room            @relation(fields: [roomID], references: [id])  
   roomID      Int
   like        Boolean?
 
@@ -63,42 +65,46 @@ model RoomLikes{
 }
 
 model Tag{
-  slurg       String
+  slurg       String          @unique
   name        String
   
   roomID      Int
-  room        Room       @relation(fields: [roomID], references: [id])
+  room        Room            @relation(fields: [roomID], references: [id])
 
   @@id([slurg, roomID])
 }
 
 model Members{
-  user        User      @relation(fields: [userID], references: [id])  
+  user        User            @relation(fields: [userID], references: [id])  
   userID      Int
-  room        Room      @relation(fields: [roomID], references: [id])  
+  room        Room            @relation(fields: [roomID], references: [id])  
   roomID      Int
 
   @@id([userID, roomID])
 }
 
 model Comment {
-  id          Int       @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   message     String
-  user        User      @relation(fields: [userID], references: [id])
+  user        User            @relation(fields: [userID], references: [id])
   userID      Int
-  room        Room      @relation(fields: [roomID], references: [id])
+  room        Room            @relation(fields: [roomID], references: [id])
   roomID      Int
   attachment  String?
-  posted      DateTime  @default(now())
+  posted      DateTime        @default(now())
   likes       CommentLikes[]
+
+  reply       Comment[]       @relation("reference")
+  referenceID Int?
+  reference   Comment?        @relation("reference", fields: [referenceID], references: [id])
 }
 
 model CommentLikes{
-  user        User      @relation(fields: [userID], references: [id])  
+  user        User            @relation(fields: [userID], references: [id])  
   userID      Int
-  comment     Comment   @relation(fields: [commentID], references: [id])  
+  comment     Comment         @relation(fields: [commentID], references: [id])  
   commentID   Int
-  like        Boolean?
+  like        Boolean
 
   @@id([userID, commentID])
 }

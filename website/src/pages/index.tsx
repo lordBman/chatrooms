@@ -1,23 +1,27 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { AppProvider } from "../utils/providers";
-import Create from "./create";
+import { BrowserRouter, Route, Switch, } from "react-router-dom";
 import Home from "./home";
 import NotFound from "./not_fount";
 import Signin from "./signin";
+import DashBoard from "./dashboard";
+import { PrivateRoute, Role } from "../utils/routes";
 
 const Pages = () =>{
     return (
         <BrowserRouter>
-            <AppProvider>
-                <Routes>
-                    <Route index Component={Home}/>
-                    <Route path="/create" Component={Create} />
-                    <Route path="*" Component={NotFound}/>
-                </Routes>
-            </AppProvider>
-            <Routes>
-                <Route path="/signin" Component={Signin} />
-            </Routes>
+            <Switch>
+                <Route exact path={"/"}>
+                    <Home />
+                </Route>
+                <Route path="/signin">
+                    <Signin />
+                </Route>
+                <Route path="/dashboard">
+                    <PrivateRoute roles={[Role.User]} Element={DashBoard}/>
+                </Route>
+                <Route path="*">
+                    <NotFound />
+                </Route>
+            </Switch>
         </BrowserRouter>
     );
 }
