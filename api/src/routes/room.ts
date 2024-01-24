@@ -36,4 +36,36 @@ roomRouter.post("/", async(req, res) =>{
     }
 });
 
+roomRouter.post("/like", async(req, res) =>{
+    if(req.cookies.chatroom){
+        if(req.body.roomID){
+            let like = await Room.toggleLike(req.cookies.chatroom, Number.parseInt(req.body.roomID));
+            if(like){
+                return res.status(HttpStatusCodes.OK).send(like);
+            }
+            return DBManager.instance().errorHandler.display(res);
+        }else{
+            return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({message: "invalid request to server"});
+        }
+    }else{
+        return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({message: "cookie expired, try login in again"});
+    }
+});
+
+roomRouter.post("/dislike", async(req, res) =>{
+    if(req.cookies.chatroom){
+        if(req.body.roomID){
+            let like = await Room.toggleDislike(req.cookies.chatroom, Number.parseInt(req.body.roomID));
+            if(like){
+                return res.status(HttpStatusCodes.OK).send(like);
+            }
+            return DBManager.instance().errorHandler.display(res);
+        }else{
+            return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({message: "invalid request to server"});
+        }
+    }else{
+        return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({message: "cookie expired, try login in again"});
+    }
+});
+
 export default roomRouter;

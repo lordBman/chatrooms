@@ -134,4 +134,42 @@ export default class Room {
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while getting rooms");
         }
     }
+
+    static async toggleLike (sessionID: string, roomID: number): Promise<Likes|undefined>{
+        try{
+            let userID = await new Session().get(sessionID);
+            const init = await DBManager.instance().client.roomLikes.findFirst({ where: { roomID } });
+            if(init && init.like){
+                return await DBManager.instance().client.roomLikes.delete({ where: { userID_roomID: { userID: userID!, roomID } }, include: { user: true }});
+            }else{
+                return await DBManager.instance().client.roomLikes.upsert({
+                    where: { userID_roomID: { userID: userID!, roomID } },
+                    update: { like: true },
+                    create: { userID: userID!, roomID, like: true },
+                    include: { user: true }
+                });
+            }
+        }catch(error){
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while liking the room");
+        }
+    }
+
+    static async toggleDislike (sessionID: string, roomID: number): Promise<Likes|undefined>{
+        try{
+            let userID = await new Session().get(sessionID);
+            const init = await DBManager.instance().client.roomLikes.findFirst({ where: { roomID } });
+            if(init && !init.like){
+                return await DBManager.instance().client.roomLikes.delete({ where: { userID_roomID: { userID: userID!, roomID } }, include: { user: true }});
+            }else{
+                return await DBManager.instance().client.roomLikes.upsert({
+                    where: { userID_roomID: { userID: userID!, roomID } },
+                    update: { like: false },
+                    create: { userID: userID!, roomID, like: false },
+                    include: { user: true }
+                });
+            }
+        }catch(error){
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while disliking the room");
+        }
+    }
 }

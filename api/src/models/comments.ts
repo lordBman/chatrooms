@@ -62,4 +62,42 @@ export default class Comment {
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered whileposting comments");
         }
     }
+
+    static async toggleLike (sessionID: string, commentID: number): Promise<Likes| undefined>{
+        try{
+            let userID = await new Session().get(sessionID);
+            const init = await DBManager.instance().client.commentLikes.findFirst({ where: { commentID } });
+            if(init && init.like){
+                return await DBManager.instance().client.commentLikes.delete({ where: { userID_commentID: { userID: userID!, commentID } }, include: { user: true }});
+            }else{
+                return await DBManager.instance().client.commentLikes.upsert({
+                    where: { userID_commentID: { userID: userID!, commentID } },
+                    update: { like: true },
+                    create: { userID: userID!, commentID, like: true },
+                    include: { user: true }
+                });
+            }
+        }catch(error){
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while liking the comment");
+        }
+    }
+
+    static async toggleDislike (sessionID: string, commentID: number): Promise<Likes| undefined>{
+        try{
+            let userID = await new Session().get(sessionID);
+            const init = await DBManager.instance().client.commentLikes.findFirst({ where: { commentID } });
+            if(init && !init.like){
+                return await DBManager.instance().client.commentLikes.delete({ where: { userID_commentID: { userID: userID!, commentID } }, include: { user: true }});
+            }else{
+                return await DBManager.instance().client.commentLikes.upsert({
+                    where: { userID_commentID: { userID: userID!, commentID } },
+                    update: { like: false },
+                    create: { userID: userID!, commentID, like: false },
+                    include: { user: true }
+                });
+            }
+        }catch(error){
+            DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while disliking the comment");
+        }
+    }
 }

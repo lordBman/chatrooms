@@ -59,7 +59,7 @@ model RoomLikes{
   userID      Int
   room        Room            @relation(fields: [roomID], references: [id])  
   roomID      Int
-  like        Boolean?
+  like        Boolean
 
   @@id([userID, roomID])
 }

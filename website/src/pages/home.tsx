@@ -12,13 +12,15 @@ const Home = () =>{
         queryFn: () => axiosInstance.get("/rooms"),
     });
 
-    if(init.isLoading || userContext.loading){
+    if(init.isLoading ){
         return <div>Loading...</div>
     }
+
     return (
         <div>
             <Header />
             <div>Rooms: {JSON.stringify(init.data?.data)}</div>
+            
         </div>
     );
 }
