@@ -10,7 +10,7 @@ export interface UserDetails{
 export default class User {    
     static async check_users(email: string, username: string): Promise<boolean | undefined>{
         try{
-            const result = await DBManager.instance().client.user.findFirst({ where: { email, username } })
+            const result = await DBManager.instance().db.user.findFirst({ where: { email, username } })
             if(result){
                 return true;
             }
@@ -22,7 +22,7 @@ export default class User {
 
     static async details(userID: number): Promise<UserDetails | undefined>{
         try{
-            const result = await DBManager.instance().client.user.findFirst({ where: { id: userID }, include:{ profile: true } })
+            const result = await DBManager.instance().db.user.findFirst({ where: { id: userID }, include:{ profile: true } })
             if(result){
                 return result ;
             }
@@ -34,7 +34,7 @@ export default class User {
 
     static async login(credentials:{ email?:string, username?: string, password: string }): Promise<{user: UserDetails, sessionID: string} | undefined>{
         try{
-            const result = await DBManager.instance().client.user.findFirst({ where:{ OR:[ { email: credentials.email }, { username: credentials.username } ] }, include:{ profile: true } });
+            const result = await DBManager.instance().db.user.findFirst({ where:{ OR:[ { email: credentials.email }, { username: credentials.username } ] }, include:{ profile: true } });
             if(result){
                 if(result.password === credentials.password){
                     const session = new Session();
@@ -55,7 +55,7 @@ export default class User {
 
     static async get_id(credentials:{ email?:string, username?: string }): Promise<number | undefined>{
         try{
-            const result = await DBManager.instance().client.user.findFirst({ where:{ OR:[ { email: credentials.email }, { username: credentials.username } ] } });
+            const result = await DBManager.instance().db.user.findFirst({ where:{ OR:[ { email: credentials.email }, { username: credentials.username } ] } });
             if(result){
                 return  result.id;
             }else{
@@ -71,7 +71,7 @@ export default class User {
             if(await this.check_users(email, username)){
                 DBManager.instance().errorHandler.add(HttpStatusCodes.ALREADY_REPORTED, "", "user with the same email or phone number already exists");
             }else{
-                return (await DBManager.instance().client.user.create({ data:{ email, username, password } })).id;
+                return (await DBManager.instance().db.user.create({ data:{ email, username, password } })).id;
             }
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered when creating user");

@@ -4,6 +4,7 @@ import User from "../models/users";
 import { DBManager } from "../config";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
 import Room from "../models/rooms";
+import { Profile } from "../models";
 
 export const userRouter = express.Router();
 
@@ -90,6 +91,16 @@ userRouter.get("/dashboard", async(req, res) =>{
         return DBManager.instance().errorHandler.display(res);
     }
     return res.status(HttpStatusCodes.OK).send(rooms);
+});
+
+userRouter.post("/profile", async(req, res) =>{
+    const sessionID = req.cookies.chatroom; 
+
+    const profile = await Profile.createOrUpdate(sessionID, { ...req.body });
+    if(DBManager.instance().errorHandler.has_error()){
+        return DBManager.instance().errorHandler.display(res);
+    }
+    return res.status(HttpStatusCodes.OK).send(profile);
 });
 
 export default userRouter;

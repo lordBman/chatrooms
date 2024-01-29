@@ -11,7 +11,7 @@ const Create = () =>{
     const context = useContext(DashBoardContext) as DashBoardContextType;
     const navigate = useHistory();
     const [data, setData] = useState({ title: "", tags: [""], isPrivate: false});
-    const [state, setState] = useState<{ loading: boolean, isError: boolean, message: any }>({ loading: false, isError: false, message: `Creating Room, please wait...` });
+    const [state, setState] = useState<{ isError: boolean, message: any }>({ isError: false, message: `Creating Room, please wait...` });
 
 
     const change = (values: string[]) => setData((init)=>{ return {...init, tags: values } });
@@ -28,7 +28,7 @@ const Create = () =>{
             navigate.replace("/dashboard");
         },
         onError(error) {
-            setState(init => { return { ...init, loading: false, isError: true, message: JSON.stringify(error) }});
+            setState(init => { return { ...init, isError: true, message: JSON.stringify(error) }});
         },
     });
 
@@ -38,7 +38,7 @@ const Create = () =>{
         createMutation.mutate(data);
     }
 
-    if(context.loading || userContext.loading || state.loading){
+    if(context.loading || userContext.loading || createMutation.isLoading){
         return (
             <div>Loading....</div>
         );

@@ -16,7 +16,7 @@ class DBManager{
 
     static disponse = () =>{
         if(DBManager.db){
-            DBManager.db.client.$disconnect();
+            DBManager.db.db.$disconnect();
         }
     }
 }

@@ -1,4 +1,4 @@
-import { Likes } from ".";
+import { Likes, Member } from ".";
 import { DBManager } from "../config";
 import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
@@ -15,7 +15,7 @@ export interface CommentDetails{
 export default class Comment {    
     static async details(id: number): Promise<CommentDetails | undefined>{
         try{
-            const result = await DBManager.instance().client.comment.findFirst({ where: { id }, include:{ user: { include: { profile: true } }, likes: { include: { user: true } } } })
+            const result = await DBManager.instance().db.comment.findFirst({ where: { id }, include:{ user: { include: { profile: true } }, likes: { include: { user: true } } } })
             if(result){
                 return result;
             }
@@ -28,12 +28,12 @@ export default class Comment {
     static async get(roomID: number, page: number = 1): Promise<CommentDetails[] | undefined>{
         const commentsPerPage = 10; // Number of users to display per page
         try{
-            const result = await DBManager.instance().client.comment.findMany({
+            const result = await DBManager.instance().db.comment.findMany({
                 skip: (page - 1) * commentsPerPage, // Skip the appropriate number of records
                 take: commentsPerPage, // Take only the specified number of records
                 where: { roomID }, 
                 include: { user: { include: { profile: true } }, likes: { include: { user: true } } }, 
-                orderBy: { posted: "desc" } })
+                orderBy: { posted: "asc" } })
             if(result){
                 return result;
             }
@@ -47,12 +47,16 @@ export default class Comment {
         try{
             let userID = await new Session().get(sessionID);
             
-            const comment = await DBManager.instance().client.comment.create({
+            const comment = await DBManager.instance().db.comment.create({
                 data: { message: message, userID: userID!, roomID },
-                include: { user: true, likes: { include: { user: true } } }
+                include: { user: true, room: true, likes: { include: { user: true } } }
             });
+
+            if(comment.room.creatorID !== userID){
+                await Member.add(sessionID, roomID);
+            }
             
-            await DBManager.instance().client.room.update({
+            await DBManager.instance().db.room.update({
                 where: { id: roomID, },
                 data: { lastCommented: comment.posted },
             });
@@ -63,39 +67,39 @@ export default class Comment {
         }
     }
 
-    static async toggleLike (sessionID: string, commentID: number): Promise<Likes| undefined>{
+    static async toggleLike (sessionID: string, commentID: number): Promise<Likes[]| undefined>{
         try{
             let userID = await new Session().get(sessionID);
-            const init = await DBManager.instance().client.commentLikes.findFirst({ where: { commentID } });
+            const init = await DBManager.instance().db.commentLikes.findFirst({ where:{ userID: userID!, commentID } });
             if(init && init.like){
-                return await DBManager.instance().client.commentLikes.delete({ where: { userID_commentID: { userID: userID!, commentID } }, include: { user: true }});
+                await DBManager.instance().db.commentLikes.delete({ where: { userID_commentID: { userID: userID!, commentID } }});
             }else{
-                return await DBManager.instance().client.commentLikes.upsert({
+                await DBManager.instance().db.commentLikes.upsert({
                     where: { userID_commentID: { userID: userID!, commentID } },
                     update: { like: true },
                     create: { userID: userID!, commentID, like: true },
-                    include: { user: true }
                 });
             }
+            return await DBManager.instance().db.commentLikes.findMany({ include: { user: true } });
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while liking the comment");
         }
     }
 
-    static async toggleDislike (sessionID: string, commentID: number): Promise<Likes| undefined>{
+    static async toggleDislike (sessionID: string, commentID: number): Promise<Likes[]| undefined>{
         try{
             let userID = await new Session().get(sessionID);
-            const init = await DBManager.instance().client.commentLikes.findFirst({ where: { commentID } });
+            const init = await DBManager.instance().db.commentLikes.findFirst({  where:{ userID: userID!, commentID } });
             if(init && !init.like){
-                return await DBManager.instance().client.commentLikes.delete({ where: { userID_commentID: { userID: userID!, commentID } }, include: { user: true }});
+                await DBManager.instance().db.commentLikes.delete({ where: { userID_commentID: { userID: userID!, commentID } }});
             }else{
-                return await DBManager.instance().client.commentLikes.upsert({
+                await DBManager.instance().db.commentLikes.upsert({
                     where: { userID_commentID: { userID: userID!, commentID } },
                     update: { like: false },
                     create: { userID: userID!, commentID, like: false },
-                    include: { user: true }
                 });
             }
+            return await DBManager.instance().db.commentLikes.findMany({ include: { user: true } });
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while disliking the comment");
         }

@@ -1,8 +1,9 @@
 import { useContext } from "react";
 import { UserContext, UserContextType } from "../utils/providers/user";
-import { Header } from "../components";
+import { Header, RoomsPreview } from "../components";
 import { useQuery } from "react-query";
 import { axiosInstance } from "../utils/axios_context";
+import { Room } from "../utils/response";
 
 const Home = () =>{
     const userContext = useContext(UserContext) as UserContextType;
@@ -19,8 +20,8 @@ const Home = () =>{
     return (
         <div>
             <Header />
-            <div>Rooms: {JSON.stringify(init.data?.data)}</div>
-            
+            <div>Rooms</div>
+            <div>{ init.data?.data.map((room: Room) =>(<RoomsPreview room={room} />))}</div>
         </div>
     );
 }

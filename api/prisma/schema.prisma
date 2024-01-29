@@ -34,6 +34,8 @@ model Profile{
   userID      Int         @unique
   user        User        @relation(fields: [userID], references: [id])
 
+  name        String?
+  surname     String?
   description String?
   path        String?
 }

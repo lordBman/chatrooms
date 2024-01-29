@@ -1,24 +1,28 @@
-import React, { useContext } from "react";
+import React, { CSSProperties, useContext } from "react";
 import { UserContext, UserContextType } from "../utils/providers/user";
 import { Comment } from "../utils/response";
+import { LikesView } from ".";
 
 export interface CommentViewProps{
-    comment: Comment
+    comment: Comment,
+    roomID: number
 }
 
-const CommentView: React.FC<CommentViewProps> = ({ comment }) =>{
+const CommentView: React.FC<CommentViewProps> = ({ comment, roomID }) =>{
     const { user } = useContext(UserContext) as UserContextType;
     const date = new Date(comment.posted);
 
-    if(user?.username === comment.user.username){
-        return (<div style={{ justifySelf: "end", margin: 8 }}>
-            me: { comment.message }
-            <div>{ date.toLocaleTimeString() }-{ date.toLocaleDateString() }</div>
-        </div>);
-    }
+    const mine = user?.username === comment.user.username;
+
+    const styles: CSSProperties = {
+        justifySelf: ( mine ?  "self-end" : "self-start"),
+        margin: 8
+    };
+;
     return (
-        <div style={{ justifySelf: "start", margin: 8}}>
-            {comment.user.username}: { comment.message }
+        <div style={{ ...styles}}>
+            {mine ? "me" : comment.user.username}: { comment.message }
+            <LikesView likes={comment.likes} mine={mine} query={{ roomID, commentID: comment.id }} endpoint="/comments" />
             <div>{ date.toLocaleTimeString() }-{ date.toLocaleDateString() }</div>
         </div>
     );

@@ -10,7 +10,7 @@ export interface TagDetails{
 export default class Tag{
     static async get(roomID: number): Promise<TagDetails[] | undefined>{
         try{
-            const result = await DBManager.instance().client.tag.findMany({ where: { roomID } });
+            const result = await DBManager.instance().db.tag.findMany({ where: { roomID } });
             if(result){
                 return result;
             }
@@ -25,12 +25,12 @@ export default class Tag{
             let result = [];
             for(const tag in tags){
                 let slurg = toSlurg(tag);
-                const existingRecord = await DBManager.instance().client.tag.findMany({
+                const existingRecord = await DBManager.instance().db.tag.findMany({
                     where: { AND: [ {slurg}, { roomID } ] },
                 });
                   
                 if (existingRecord.length === 0) {
-                    result.push(await DBManager.instance().client.tag.create({
+                    result.push(await DBManager.instance().db.tag.create({
                         data: { slurg, name: tag, roomID },
                     }));
                 }else{

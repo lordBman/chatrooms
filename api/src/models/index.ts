@@ -3,10 +3,10 @@ import Member from "./members";
 import Profile from "./profile";
 import Room from "./rooms";
 import Tag from "./tags";
-import User from "./users";
+import User, { UserDetails } from "./users";
 
 export interface Likes{
-    user: User,
+    user: UserDetails,
     like: boolean | null
 }
 

@@ -2,8 +2,8 @@ import { BrowserRouter, Route, Switch, } from "react-router-dom";
 import Home from "./home";
 import NotFound from "./not_fount";
 import Signin from "./signin";
-import DashBoard from "./dashboard";
 import { PrivateRoute, Role } from "../utils/routes";
+import DashBoard from "./dashboard";
 
 const Pages = () =>{
     return (

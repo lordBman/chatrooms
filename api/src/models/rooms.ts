@@ -21,7 +21,7 @@ export interface RoomDetails{
 export default class Room {    
     static async check_rooms(title: string): Promise<boolean | undefined>{
         try{
-            const result = await DBManager.instance().client.room.findFirst({ where: { title } })
+            const result = await DBManager.instance().db.room.findFirst({ where: { title } })
             if(result){
                 return true;
             }
@@ -33,7 +33,7 @@ export default class Room {
 
     static async details(id: number): Promise<RoomDetails | undefined>{
         try{
-            const result = await DBManager.instance().client.room.findFirst({ where: { id }, include:{ creator:  { include: { profile: true } }, tags: true, likes: { include: { user: true } } } });
+            const result = await DBManager.instance().db.room.findFirst({ where: { id }, include:{ creator:  { include: { profile: true } }, tags: true, likes: { include: { user: true } } } });
             if(result){
                 const comments = await Comment.get(id);
                 return { ...result, comments: comments! };
@@ -50,7 +50,7 @@ export default class Room {
             if(await Room.check_rooms(title)){
                 DBManager.instance().errorHandler.add(HttpStatusCodes.ALREADY_REPORTED, "", "Room with the same title already exists");
             }else{
-                const result = await DBManager.instance().client.room.create({ 
+                const result = await DBManager.instance().db.room.create({ 
                     data:{ creatorID: creatorID!, title, isPrivate },
                     include: { 
                         creator: { include:{ profile: true } }, 
@@ -75,13 +75,14 @@ export default class Room {
             if(query.sessionID){
                 userID = await new Session().get(query.sessionID);
             }
-            const result = await DBManager.instance().client.room.findMany({
+            const result = await DBManager.instance().db.room.findMany({
                 take: roomsPerPage,
                 skip: (page - 1) * roomsPerPage,
                 where: {
-                    OR:[ 
+                    OR:[
                         { members: { some: { userID},},},
                         { creatorID: userID },
+                        { isPrivate: false },
                         { AND: [
                             // Rooms with tags similar to rooms liked by the user
                             { tags: { some: { room: { likes: { some: { userID, like: true,} }}}},},
@@ -110,7 +111,7 @@ export default class Room {
         try{
             let userID = await new Session().get(query.sessionID);
 
-            const result = await DBManager.instance().client.room.findMany({
+            const result = await DBManager.instance().db.room.findMany({
                 take: roomsPerPage,
                 skip: (page - 1) * roomsPerPage,
                 where: {
@@ -135,39 +136,39 @@ export default class Room {
         }
     }
 
-    static async toggleLike (sessionID: string, roomID: number): Promise<Likes|undefined>{
+    static async toggleLike (sessionID: string, roomID: number): Promise<Likes[]|undefined>{
         try{
             let userID = await new Session().get(sessionID);
-            const init = await DBManager.instance().client.roomLikes.findFirst({ where: { roomID } });
+            const init = await DBManager.instance().db.roomLikes.findFirst({ where: { roomID, userID } });
             if(init && init.like){
-                return await DBManager.instance().client.roomLikes.delete({ where: { userID_roomID: { userID: userID!, roomID } }, include: { user: true }});
+                await DBManager.instance().db.roomLikes.delete({ where: { userID_roomID: { userID: userID!, roomID } },});
             }else{
-                return await DBManager.instance().client.roomLikes.upsert({
+                await DBManager.instance().db.roomLikes.upsert({
                     where: { userID_roomID: { userID: userID!, roomID } },
                     update: { like: true },
                     create: { userID: userID!, roomID, like: true },
-                    include: { user: true }
                 });
             }
+            return await DBManager.instance().db.roomLikes.findMany({ include: { user: true } });
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while liking the room");
         }
     }
 
-    static async toggleDislike (sessionID: string, roomID: number): Promise<Likes|undefined>{
+    static async toggleDislike (sessionID: string, roomID: number): Promise<Likes[]|undefined>{
         try{
             let userID = await new Session().get(sessionID);
-            const init = await DBManager.instance().client.roomLikes.findFirst({ where: { roomID } });
+            const init = await DBManager.instance().db.roomLikes.findFirst({ where: { roomID, userID } });
             if(init && !init.like){
-                return await DBManager.instance().client.roomLikes.delete({ where: { userID_roomID: { userID: userID!, roomID } }, include: { user: true }});
+                await DBManager.instance().db.roomLikes.delete({ where: { userID_roomID: { userID: userID!, roomID } },});
             }else{
-                return await DBManager.instance().client.roomLikes.upsert({
+                await DBManager.instance().db.roomLikes.upsert({
                     where: { userID_roomID: { userID: userID!, roomID } },
                     update: { like: false },
                     create: { userID: userID!, roomID, like: false },
-                    include: { user: true }
                 });
             }
+            return await DBManager.instance().db.roomLikes.findMany({ include: { user: true } });
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while disliking the room");
         }
