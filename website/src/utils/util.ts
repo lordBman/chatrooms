@@ -1,3 +1,4 @@
+import { Likes, User } from "./response";
 import { LooseObject } from "./types";
 
 export default class Util{
@@ -47,5 +48,24 @@ export default class Util{
         });
 
         return obj;
+    }
+
+    public static likesCount(likes: Likes[], user?: User,): { likes: number, dislikes: number, iLike?: boolean }{
+        let initLike = 0;
+        let initDislike = 0;
+        let iLike: boolean | undefined;
+
+        likes.forEach((like)=>{
+            if(user && user.username === like.user.username){
+                iLike = like.like!;
+            }
+            if(like.like){
+                initLike += 1;
+            }else{
+                initDislike += 1;
+            }
+        });
+
+        return { likes: initLike, dislikes: initDislike, iLike };
     }
 }

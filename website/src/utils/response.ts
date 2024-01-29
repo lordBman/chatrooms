@@ -1,14 +1,14 @@
-interface ErrorResponse{
+export interface ErrorResponse{
     message: string;
 }
 
-interface User{
+export interface User{
     username: string,
     email: string,
     profile?: Profile
 }
 
-interface Profile{
+export interface Profile{
     description?: string,
     path?: string
 }
@@ -17,7 +17,9 @@ export interface Comment{
     id: number,
     message: string,
     user: User,
-    attachment: string | null
+    attachment: string | null,
+    posted: string,
+    likes: Likes[]
 }
 
 export interface Tag{
@@ -33,7 +35,11 @@ export interface Room{
     comments: Comment[],
     attachment: string | null,
     members?: { user: User }[],
-    tags: Tag[]
+    tags: Tag[],
+    likes: Likes[]
 }
 
-export type{ ErrorResponse, User, Profile };
+export interface Likes{
+    user: User,
+    like: boolean | null
+}

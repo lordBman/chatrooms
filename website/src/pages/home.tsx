@@ -1,26 +1,27 @@
 import { useContext } from "react";
-import UserProvider, { AppContext, AppContextType } from "../utils/providers/app";
 import { UserContext, UserContextType } from "../utils/providers/user";
-import { Header } from "../components";
-import { Link } from "react-router-dom";
+import { Header, RoomsPreview } from "../components";
+import { useQuery } from "react-query";
+import { axiosInstance } from "../utils/axios_context";
+import { Room } from "../utils/response";
 
 const Home = () =>{
-    const appContext = useContext(AppContext) as AppContextType;
     const userContext = useContext(UserContext) as UserContextType;
 
-    if(appContext.loading || userContext.loading){
+    const init = useQuery({
+        queryKey: ["rooms"],
+        queryFn: () => axiosInstance.get("/rooms"),
+    });
+
+    if(init.isLoading ){
         return <div>Loading...</div>
     }
+
     return (
         <div>
             <Header />
-            { userContext.user && (
-                <div>
-                    <div>User: {JSON.stringify(userContext.user)}</div>
-                </div>
-            ) }
-            <Link to={"/create"}>Create Room</Link>
-            <div>Rooms: {JSON.stringify(appContext.rooms)}</div>
+            <div>Rooms</div>
+            <div>{ init.data?.data.map((room: Room) =>(<RoomsPreview room={room} />))}</div>
         </div>
     );
 }

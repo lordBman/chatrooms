@@ -10,7 +10,10 @@ const Header = () =>{
     }
     
     return (
-        <button onClick={()=> logout() }>Logout</button>
+        <div>
+            <button onClick={()=> logout() }>Logout</button>
+            <Link to={"/dashboard"}>DashBoard</Link>
+        </div>
     );
 }
 

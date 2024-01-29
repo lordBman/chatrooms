@@ -3,6 +3,8 @@ import Session from "../config/session";
 import User from "../models/users";
 import { DBManager } from "../config";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
+import Room from "../models/rooms";
+import { Profile } from "../models";
 
 export const userRouter = express.Router();
 
@@ -78,6 +80,27 @@ userRouter.get("/logout", (req, res) =>{
     }else{
         return res.status(HttpStatusCodes.BAD_REQUEST).send({message: "invalid req to server"});
     }
+});
+
+userRouter.get("/dashboard", async(req, res) =>{
+    const sessionID = req.cookies.chatroom;
+    const page:  number = Number.parseInt((req.query.page as string) || "1");
+
+    const rooms = await Room.dashboard({ sessionID, page });
+    if(DBManager.instance().errorHandler.has_error()){
+        return DBManager.instance().errorHandler.display(res);
+    }
+    return res.status(HttpStatusCodes.OK).send(rooms);
+});
+
+userRouter.post("/profile", async(req, res) =>{
+    const sessionID = req.cookies.chatroom; 
+
+    const profile = await Profile.createOrUpdate(sessionID, { ...req.body });
+    if(DBManager.instance().errorHandler.has_error()){
+        return DBManager.instance().errorHandler.display(res);
+    }
+    return res.status(HttpStatusCodes.OK).send(profile);
 });
 
 export default userRouter;

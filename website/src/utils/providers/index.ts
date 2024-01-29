@@ -1,4 +1,5 @@
 import AppProvider from "./app";
+import DashBoardProvider from "./dashboard";
 import UserProvider from "./user";
 
-export { AppProvider, UserProvider }
+export { AppProvider, UserProvider, DashBoardProvider }

@@ -5,7 +5,7 @@ import uuid from "../utils";
 export default class Session{
 
     private async check_users(userID: number): Promise<boolean | undefined>{
-        const result = await DBManager.instance().client.session.findFirst({ where:{ userID: userID }});
+        const result = await DBManager.instance().db.session.findFirst({ where:{ userID: userID }});
         if(result){
             return true;
         }
@@ -14,7 +14,7 @@ export default class Session{
 		
     async get(id: string): Promise<number | undefined>{
         try{
-            const result = await DBManager.instance().client.session.findFirst({ where:{ id: id }});
+            const result = await DBManager.instance().db.session.findFirst({ where:{ id: id }});
             if(result){
                 return result.userID;
             }else{
@@ -34,7 +34,7 @@ export default class Session{
             return await this.create(userID);
         }else{
             try{
-                const init = await DBManager.instance().client.session.create({ data: { userID: userID, id: token } });
+                const init = await DBManager.instance().db.session.create({ data: { userID: userID, id: token } });
                 if(init){
                     return token;
                 }
@@ -47,7 +47,7 @@ export default class Session{
 		
 	async delete(userID: number): Promise<boolean | undefined>{
         try{
-            const init = await DBManager.instance().client.session.delete({ where: { userID: userID } });
+            const init = await DBManager.instance().db.session.delete({ where: { userID: userID } });
             if(init){
                 return true;
             }

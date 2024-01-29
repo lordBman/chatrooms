@@ -1,11 +1,11 @@
 import { useContext, useEffect } from "react";
 import Util from "../utils/util";
 import { UserContext, UserContextType } from "../utils/providers/user";
-import { useNavigate } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 const Signin = () =>{
     const { loading, user, signin, login } = useContext(UserContext) as UserContextType;
-    const navigate = useNavigate();
+    const navigate = useHistory();
 
     const register = (event: React.FormEvent<HTMLFormElement>) =>{
         event.preventDefault();
@@ -27,7 +27,7 @@ const Signin = () =>{
         //alert(JSON.stringify(data.email));
     }
 
-    useEffect(()=> user && navigate("/"), [user]);
+    useEffect(()=> user && navigate.push("/"), [user]);
 
     return (
         <div>

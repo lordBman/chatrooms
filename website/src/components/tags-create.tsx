@@ -5,7 +5,7 @@ export interface TagCreateProps{
     values?: string[],
 }
 
-const TagCreate: React.FC<TagCreateProps> = ({ onChange, values }) =>{
+const TagsCreate: React.FC<TagCreateProps> = ({ onChange, values }) =>{
     const [initValues, setValues] = useState(values || [""]);
 
     const change = (index: number, event: ChangeEvent<HTMLInputElement>) =>{
@@ -17,11 +17,13 @@ const TagCreate: React.FC<TagCreateProps> = ({ onChange, values }) =>{
     }
 
     const initView = (value: string, index: number) =>{
-        return (<div key={index}>
-            <label htmlFor={ `Tag ${index + 1}` }>{ `Tag ${index + 1}` }</label>
-            <input id={ `Tag ${index + 1}` } onChange={ (event) => change(index, event) } value={value} type="text" placeholder="enter tag name" required />
-            <button onClick={()=> remove(index) } >remove</button>
-        </div>);
+        return (
+            <div key={index}>
+                <label htmlFor={ `Tag ${index + 1}` }>{ `Tag ${index + 1}` }</label>
+                <input id={ `Tag ${index + 1}` } onChange={ (event) => change(index, event) } value={value} type="text" placeholder="enter tag name" required />
+                <button onClick={()=> remove(index) } >remove</button>
+            </div>
+        );
     }
 
     const add = () => {
@@ -48,4 +50,4 @@ const TagCreate: React.FC<TagCreateProps> = ({ onChange, values }) =>{
     );
 }
 
-export default TagCreate;
+export default TagsCreate;
