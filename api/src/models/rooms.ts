@@ -54,7 +54,11 @@ export default class Room {
                     data:{ creatorID: creatorID!, title, isPrivate },
                     include: { 
                         creator: { include:{ profile: true } }, 
-                        comments: { include: { user: true, likes: { include: { user: true } } } }, 
+                        comments: {include: {
+                            user: true,
+                            likes: { include: { user: true } },
+                            reply: { include: { user: { include: { profile:  true } }, likes: { include: { user: { include: { profile: true } } } } } }
+                        } }, 
                         likes: { include: { user: true } }, } });
                 if(result){
                     const initTags = await Tag.create(result.id, tags);
@@ -95,7 +99,11 @@ export default class Room {
                 // Include additional data if needed
                 include: {
                     creator: true,
-                    comments:{ include:{ user: true, likes: { include: { user: true } } } },
+                    comments:{ include:{
+                        user: true,
+                        likes: { include: { user: true } },
+                        reply: { include: { user: { include: { profile:  true } }, likes: { include: { user: { include: { profile: true } } } } } }
+                    } },
                     tags: true, members: { include: { user: true } },
                     likes: { include: { user: true } } },
             });
@@ -126,7 +134,11 @@ export default class Room {
                 // Include additional data if needed
                 include: {
                     creator: true,
-                    comments:{ include:{ user: true, likes: { include: { user: true } } } },
+                    comments:{ include:{
+                        user: true,
+                        likes: { include: { user: true } },
+                        reply: { include: { user: { include: { profile:  true } }, likes: { include: { user: { include: { profile: true } } } } } }
+                    } },
                     likes: { include: { user: true } },
                     tags: true, members: { include: { user: true, } }, },
             });
@@ -149,7 +161,7 @@ export default class Room {
                     create: { userID: userID!, roomID, like: true },
                 });
             }
-            return await DBManager.instance().db.roomLikes.findMany({ include: { user: true } });
+            return await DBManager.instance().db.roomLikes.findMany({ where: { roomID }, include: { user: true } });
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while liking the room");
         }
@@ -168,7 +180,7 @@ export default class Room {
                     create: { userID: userID!, roomID, like: false },
                 });
             }
-            return await DBManager.instance().db.roomLikes.findMany({ include: { user: true } });
+            return await DBManager.instance().db.roomLikes.findMany({ where: { roomID }, include: { user: true } });
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while disliking the room");
         }

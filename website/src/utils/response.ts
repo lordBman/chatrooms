@@ -19,6 +19,15 @@ export interface Comment{
     user: User,
     attachment: string | null,
     posted: string,
+    likes: Likes[],
+    reply: SubComment[]
+}
+
+export interface SubComment{
+    id: number,
+    message: string,
+    user: User,
+    posted: string,
     likes: Likes[]
 }
 

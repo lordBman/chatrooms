@@ -4,18 +4,31 @@ import Session from "../config/session";
 import HttpStatusCodes from "../constants/HttpStatusCodes";
 import User, { UserDetails } from "./users"
 
+export interface SubCommentDetails{
+    id: number,
+    message: string,
+    user: UserDetails,
+    likes: Likes[]
+}
+
 export interface CommentDetails{
     id: number,
     message: string,
     user: UserDetails,
     attachment: string | null,
-    likes: Likes[]
+    likes: Likes[],
+    reply: SubCommentDetails[]
 }
 
 export default class Comment {    
     static async details(id: number): Promise<CommentDetails | undefined>{
         try{
-            const result = await DBManager.instance().db.comment.findFirst({ where: { id }, include:{ user: { include: { profile: true } }, likes: { include: { user: true } } } })
+            const result = await DBManager.instance().db.comment.findFirst({ where: { id },
+                include:{
+                    user: { include: { profile: true } },
+                    likes: { include: { user: true } },
+                    reply: { include: { user: { include: { profile:  true } }, likes: { include: { user: { include: { profile: true } } } } } }
+                } })
             if(result){
                 return result;
             }
@@ -32,7 +45,11 @@ export default class Comment {
                 skip: (page - 1) * commentsPerPage, // Skip the appropriate number of records
                 take: commentsPerPage, // Take only the specified number of records
                 where: { roomID }, 
-                include: { user: { include: { profile: true } }, likes: { include: { user: true } } }, 
+                include: { 
+                    user: { include: { profile: true } },
+                    likes: { include: { user: true } },
+                    reply: { include: { user: { include: { profile:  true } }, likes: { include: { user: { include: { profile: true } } } } } }
+                }, 
                 orderBy: { posted: "asc" } })
             if(result){
                 return result;
@@ -49,7 +66,11 @@ export default class Comment {
             
             const comment = await DBManager.instance().db.comment.create({
                 data: { message: message, userID: userID!, roomID },
-                include: { user: true, room: true, likes: { include: { user: true } } }
+                include: {
+                    user: true, room: true,
+                    likes: { include: { user: true } },
+                    reply: { include: { user: { include: { profile:  true } }, likes: { include: { user: { include: { profile: true } } } } } }
+                }
             });
 
             if(comment.room.creatorID !== userID){
@@ -80,7 +101,7 @@ export default class Comment {
                     create: { userID: userID!, commentID, like: true },
                 });
             }
-            return await DBManager.instance().db.commentLikes.findMany({ include: { user: true } });
+            return await DBManager.instance().db.commentLikes.findMany({ where:{ commentID }, include: { user: true } });
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while liking the comment");
         }
@@ -99,7 +120,7 @@ export default class Comment {
                     create: { userID: userID!, commentID, like: false },
                 });
             }
-            return await DBManager.instance().db.commentLikes.findMany({ include: { user: true } });
+            return await DBManager.instance().db.commentLikes.findMany({ where:{ commentID }, include: { user: true } });
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while disliking the comment");
         }

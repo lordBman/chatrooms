@@ -19,10 +19,6 @@ const RoomsView: React.FC<RoomsViewProps> = ({ room }) =>{
     return (
         <div onClick={clicked} style={{ cursor: "pointer" }}>
             { JSON.stringify(room.title) }
-            <LikesView likes={room.likes} mine={mine || false} query={{ roomID: room.id }} endpoint="/rooms" />
-            <div>
-                { room.tags.map((tag)=>(<TagView key={tag.slurg} tag={tag} />)) }
-            </div>
         </div>
     );
 }

@@ -6,7 +6,8 @@ import LikesView from "./likes";
 import Loading from "./loading";
 import RoomsPreview from "./rooms-preview";
 import RoomsView from "./rooms-view";
+import SubCommentView from "./subcomment-view";
 import TagView from "./tag-view";
 import TagsCreate from "./tags-create";
 
-export { Loading, Header, TagsCreate, Chat, Create, RoomsView, TagView, CommentView, RoomsPreview, LikesView }
+export { Loading, Header, TagsCreate, Chat, Create, RoomsView, TagView, CommentView, RoomsPreview, LikesView, SubCommentView }
