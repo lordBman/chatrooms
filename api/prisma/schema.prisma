@@ -40,6 +40,13 @@ model Profile{
   path        String?
 }
 
+model Post {
+  id                Int           @id @default(autoincrement())
+  message           String
+  posted            DateTime      @default(now())
+  isPrivate         Boolean       @default(false)
+}
+
 model Room {
   id                Int           @id @default(autoincrement())
   title             String
