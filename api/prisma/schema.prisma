@@ -11,109 +11,133 @@ datasource db {
 }
 
 model User {
-  id            Int         @id @default(autoincrement())
-  email         String      @unique
-  username      String      @unique
-  password      String
-  rooms         Room[]
-  comments      Comment[]
-  members       Members[]
-  session       Session?
-  profile       Profile?
-  commentLikes  CommentLikes[]
-  roomLikes     RoomLikes[]
-}
+  id                Int            @id @default(autoincrement())
+  username          String
+  email             String
+  password          String
+  session           Session?
+  profile           Profile?
 
-model Session{
-  id          String      @unique
-  userID      Int         @unique
-  user        User        @relation(fields: [userID], references: [id])
+  posts             Post[]
+  rooms             Room[]
+  chats             Chat[]
+  members           Members[]
+  comments          Comment[]
+  commentLikes      CommentLikes[]
+  postLikes         PostLikes[]
 }
 
 model Profile{
-  userID      Int         @unique
-  user        User        @relation(fields: [userID], references: [id])
+  userID            Int           @unique
+  user              User          @relation(fields: [userID], references: [id])
 
-  name        String?
-  surname     String?
-  description String?
-  path        String?
+  name              String?
+  surname           String?
+  description       String?
+  path              String?
+}
+
+model Session{
+  id                String        @unique
+  userID            Int           @unique
+  user              User          @relation(fields: [userID], references: [id])
 }
 
 model Post {
   id                Int           @id @default(autoincrement())
-  message           String
-  posted            DateTime      @default(now())
-  isPrivate         Boolean       @default(false)
-}
-
-model Room {
-  id                Int           @id @default(autoincrement())
-  title             String
-  creator           User          @relation(fields: [creatorID], references: [id])  
-  creatorID         Int
-  isPrivate         Boolean       @default(false)
-  posted            DateTime      @default(now())
-  lastCommented     DateTime      @default(now())
-  attachment        String?
-  
-  comments          Comment[]
-  members           Members[]
+  content           String
+  userID            Int
+  roomID            Int?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  user              User          @relation(fields: [userID], references: [id])
+  room              Room?         @relation(fields: [roomID], references: [id])
   tags              Tag[]
-  likes             RoomLikes[]
-}
-
-model RoomLikes{
-  user        User            @relation(fields: [userID], references: [id])  
-  userID      Int
-  room        Room            @relation(fields: [roomID], references: [id])  
-  roomID      Int
-  like        Boolean
-
-  @@id([userID, roomID])
+  comments          Comment[]
+  likes             PostLikes[]
 }
 
 model Tag{
-  slurg       String
-  name        String
+  slurg             String
+  name              String
   
-  roomID      Int
-  room        Room            @relation(fields: [roomID], references: [id])
+  postID            Int
+  post              Post          @relation(fields: [postID], references: [id])
 
-  @@id([slurg, roomID])
+  @@id([slurg, postID])
+}
+
+model PostLikes{
+  user              User          @relation(fields: [userID], references: [id])  
+  userID            Int
+  post              Post       @relation(fields: [postID], references: [id])  
+  postID            Int
+  like              Boolean
+
+  @@id([userID, postID])
+}
+
+model Comment {
+  id                Int           @id @default(autoincrement())
+  message           String
+  user              User          @relation(fields: [userID], references: [id])
+  userID            Int
+  post              Post          @relation(fields: [postID], references: [id])
+  postID            Int
+  attachment        String?
+  posted            DateTime      @default(now())
+  likes             CommentLikes[]
+
+  reply             Comment[]     @relation("reference")
+  referenceID       Int?
+  reference         Comment?      @relation("reference", fields: [referenceID], references: [id])
+}
+
+model CommentLikes{
+  user              User          @relation(fields: [userID], references: [id])  
+  userID            Int
+  comment           Comment       @relation(fields: [commentID], references: [id])  
+  commentID         Int
+  like              Boolean
+
+  @@id([userID, commentID])
 }
 
 model Members{
-  user        User            @relation(fields: [userID], references: [id])  
-  userID      Int
-  room        Room            @relation(fields: [roomID], references: [id])  
-  roomID      Int
+  user              User           @relation(fields: [userID], references: [id])  
+  userID            Int
+  room              Room           @relation(fields: [roomID], references: [id])  
+  roomID            Int
 
   @@id([userID, roomID])
 }
 
-model Comment {
-  id          Int             @id @default(autoincrement())
-  message     String
-  user        User            @relation(fields: [userID], references: [id])
-  userID      Int
-  room        Room            @relation(fields: [roomID], references: [id])
-  roomID      Int
-  attachment  String?
-  posted      DateTime        @default(now())
-  likes       CommentLikes[]
+model Room {
+  id                Int            @id @default(autoincrement())
+  name              String
+  isPrivate         Boolean        @default(false)
+  lastCommented     DateTime       @default(now())
+  attachment        String?
 
-  reply       Comment[]       @relation("reference")
-  referenceID Int?
-  reference   Comment?        @relation("reference", fields: [referenceID], references: [id])
+  creatorID         Int
+  creator           User           @relation(fields: [creatorID], references: [id])
+
+  posts             Post[]
+  chats             Chat[]
+  members           Members[]
 }
 
-model CommentLikes{
-  user        User            @relation(fields: [userID], references: [id])  
-  userID      Int
-  comment     Comment         @relation(fields: [commentID], references: [id])  
-  commentID   Int
-  like        Boolean
+model Chat {
+  id                Int            @id @default(autoincrement())
+  message           String
+  userID            Int
+  roomID            Int
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  user              User           @relation(fields: [userID], references: [id])
+  room              Room           @relation(fields: [roomID], references: [id])
 
-  @@id([userID, commentID])
+  reply             Chat[]         @relation("reference")
+  referenceID       Int?
+  reference         Chat?          @relation("reference", fields: [referenceID], references: [id])
 }

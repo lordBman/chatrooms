@@ -8,9 +8,9 @@ export interface TagDetails{
 }
 
 export default class Tag{
-    static async get(roomID: number): Promise<TagDetails[] | undefined>{
+    static async get(postID: number): Promise<TagDetails[] | undefined>{
         try{
-            const result = await DBManager.instance().db.tag.findMany({ where: { roomID } });
+            const result = await DBManager.instance().db.tag.findMany({ where: { postID } });
             if(result){
                 return result;
             }
@@ -20,18 +20,18 @@ export default class Tag{
         return undefined;
     }
 
-    static async create(roomID: number, tags: string[]): Promise<TagDetails[]| undefined>{
+    static async create(postID: number, tags: string[]): Promise<TagDetails[]| undefined>{
         try{
             let result = [];
             for(const tag in tags){
                 let slurg = toSlurg(tag);
                 const existingRecord = await DBManager.instance().db.tag.findMany({
-                    where: { AND: [ {slurg}, { roomID } ] },
+                    where: { AND: [ {slurg}, { postID } ] },
                 });
                   
                 if (existingRecord.length === 0) {
                     result.push(await DBManager.instance().db.tag.create({
-                        data: { slurg, name: tag, roomID },
+                        data: { slurg, name: tag, postID },
                     }));
                 }else{
                     result.push(existingRecord[0]);

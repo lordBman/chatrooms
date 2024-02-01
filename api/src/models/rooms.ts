@@ -8,14 +8,10 @@ import { UserDetails } from "./users";
 
 export interface RoomDetails{
     id: number,
-    title: string,
+    name: string,
     creator: UserDetails,
     isPrivate: boolean,
-    comments: CommentDetails[],
-    attachment: string | null,
     members?: { user: UserDetails }[],
-    tags: TagDetails[],
-    likes: Likes[]
 }
 
 export default class Room {    
@@ -33,10 +29,9 @@ export default class Room {
 
     static async details(id: number): Promise<RoomDetails | undefined>{
         try{
-            const result = await DBManager.instance().db.room.findFirst({ where: { id }, include:{ creator:  { include: { profile: true } }, tags: true, likes: { include: { user: true } } } });
-            if(result){
-                const comments = await Comment.get(id);
-                return { ...result, comments: comments! };
+            const init =  await DBManager.instance().db.room.findFirst({ where: { id }, include:{ creator:  { include: { profile: true } } } });
+            if(init){
+                return init;
             }
         }catch(error){
             DBManager.instance().errorHandler.add(HttpStatusCodes.INTERNAL_SERVER_ERROR, `${error}`, "error encountered while getting rooms details");
